@@ -13,8 +13,10 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
+@Table(name = "users")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
     @Column(name = "password", nullable = false)

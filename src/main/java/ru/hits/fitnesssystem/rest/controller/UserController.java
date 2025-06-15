@@ -1,13 +1,13 @@
 package ru.hits.fitnesssystem.rest.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.hits.fitnesssystem.core.service.UserService;
 import ru.hits.fitnesssystem.rest.model.TokenDto;
 import ru.hits.fitnesssystem.rest.model.UserDto;
@@ -19,23 +19,27 @@ import ru.hits.fitnesssystem.rest.model.UserRegistrationDto;
 public class UserController {
     private final UserService userService;
 
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/user/{id}/profile")
     public UserDto getUserProfile(@PathVariable("id") Long id) {
         return userService.getUserProfile(id);
     }
 
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/user/my-profile")
     public UserDto getMyProfile() {
         return userService.getMyProfile();
     }
 
+    @Operation
     @PostMapping("/user/register")
-    public TokenDto register(@Valid UserRegistrationDto userRegistrationDto) {
+    public TokenDto register(@Valid @RequestBody UserRegistrationDto userRegistrationDto) {
         return userService.register(userRegistrationDto);
     }
 
+    @Operation
     @PostMapping("/user/login")
-    public TokenDto login(@Valid UserLoginDto userLoginDto) {
+    public TokenDto login(@Valid @RequestBody UserLoginDto userLoginDto) {
         return userService.login(userLoginDto);
     }
 }

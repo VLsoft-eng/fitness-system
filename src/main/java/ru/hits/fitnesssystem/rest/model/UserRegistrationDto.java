@@ -2,6 +2,7 @@ package ru.hits.fitnesssystem.rest.model;
 
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import ru.hits.fitnesssystem.core.enumeration.Gender;
 
 public record UserRegistrationDto(
@@ -13,6 +14,6 @@ public record UserRegistrationDto(
         String lastname,
         @NotBlank(message = "Пароль не может быть пустым")
         String password,
-        @NotBlank(message = "Гендер не может быть пустым")
+        @NotNull(message = "Гендер не может быть пустым")
         Gender gender
 ) {}
