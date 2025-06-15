@@ -1,0 +1,38 @@
+package ru.hits.fitnesssystem.core.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import ru.hits.fitnesssystem.core.enumeration.Gender;
+
+import java.time.LocalDate;
+
+@Builder
+@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Entity
+public class User {
+    @Id
+    public Long id;
+
+    @Column(name = "password", nullable = false)
+    private String hashedPassword;
+
+    @Column(name = "username", nullable = false)
+    private String username;
+
+    @Column(name = "firstname")
+    private String firstName;
+
+    @Column(name = "lastname")
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "birthday")
+    private LocalDate birthday;
+}
