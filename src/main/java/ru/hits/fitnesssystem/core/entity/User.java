@@ -3,13 +3,13 @@ package ru.hits.fitnesssystem.core.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.hits.fitnesssystem.core.enumeration.Gender;
+import ru.hits.fitnesssystem.core.enumeration.UserRole;
 
 import java.time.LocalDate;
 
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -35,4 +35,8 @@ public class User {
 
     @Column(name = "birthday")
     private LocalDate birthday;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private UserRole role = UserRole.DEFAULT_USER;
 }

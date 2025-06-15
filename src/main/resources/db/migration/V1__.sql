@@ -7,5 +7,6 @@ CREATE TABLE "user"
     lastname  VARCHAR(255),
     gender    VARCHAR(255),
     birthday  date,
+    role      VARCHAR(255),
     CONSTRAINT pk_user PRIMARY KEY (id)
 );
