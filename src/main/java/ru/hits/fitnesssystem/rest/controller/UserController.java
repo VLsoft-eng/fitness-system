@@ -20,25 +20,25 @@ public class UserController {
     private final UserService userService;
 
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping("/user/{id}/profile")
+    @GetMapping("/{id}/profile")
     public UserDto getUserProfile(@PathVariable("id") Long id) {
         return userService.getUserProfile(id);
     }
 
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping("/user/my-profile")
+    @GetMapping("/my-profile")
     public UserDto getMyProfile() {
         return userService.getMyProfile();
     }
 
     @Operation
-    @PostMapping("/user/register")
+    @PostMapping("/register")
     public TokenDto register(@Valid @RequestBody UserRegistrationDto userRegistrationDto) {
         return userService.register(userRegistrationDto);
     }
 
     @Operation
-    @PostMapping("/user/login")
+    @PostMapping("/login")
     public TokenDto login(@Valid @RequestBody UserLoginDto userLoginDto) {
         return userService.login(userLoginDto);
     }
