@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.hits.fitnesssystem.core.entity.User;
+import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
@@ -35,6 +36,7 @@ public class UserService {
                 .firstName(userRegistrationDto.firstname())
                 .lastName(userRegistrationDto.lastname())
                 .gender(userRegistrationDto.gender())
+                .role(UserRole.DEFAULT_USER)
                 .build();
         userRepository.save(user);
 
@@ -60,6 +62,7 @@ public class UserService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getGender(),
+                user.getRole(),
                 Optional.ofNullable(user.getBirthday())
         );
     }
@@ -75,6 +78,7 @@ public class UserService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getGender(),
+                user.getRole(),
                 Optional.ofNullable(user.getBirthday())
         );
     }

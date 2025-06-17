@@ -38,7 +38,6 @@ public class User {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role = UserRole.DEFAULT_USER;
