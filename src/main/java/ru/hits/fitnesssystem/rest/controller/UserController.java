@@ -11,6 +11,8 @@ import ru.hits.fitnesssystem.rest.model.UserDto;
 import ru.hits.fitnesssystem.rest.model.UserLoginDto;
 import ru.hits.fitnesssystem.rest.model.UserRegistrationDto;
 
+// bla bla bla
+
 @RequestMapping("/user")
 @RequiredArgsConstructor
 @RestController()
