@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.hits.fitnesssystem.core.service.UserService;
-import ru.hits.fitnesssystem.rest.model.TokenDto;
-import ru.hits.fitnesssystem.rest.model.UserDto;
-import ru.hits.fitnesssystem.rest.model.UserLoginDto;
-import ru.hits.fitnesssystem.rest.model.UserRegistrationDto;
+import ru.hits.fitnesssystem.rest.model.*;
 
 // bla bla bla
 
@@ -30,6 +27,12 @@ public class UserController {
     @GetMapping("/my-profile")
     public UserDto getMyProfile() {
         return userService.getMyProfile();
+    }
+
+    @Operation
+    @GetMapping("/get-all")
+    public UserListDto getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @Operation

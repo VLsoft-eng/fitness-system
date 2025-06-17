@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public record UserDto(
+        Long id,
         String username,
         String firstname,
         String lastname,

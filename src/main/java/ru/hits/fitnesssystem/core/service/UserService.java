@@ -12,6 +12,7 @@ import ru.hits.fitnesssystem.core.security.JwtTokenProvider;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
 import ru.hits.fitnesssystem.rest.model.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -55,6 +56,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователя с такими данными не существует"));
 
         return new UserDto(
+                user.getId(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
@@ -71,6 +73,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователя с такими данными не существует"));
 
         return new UserDto(
+                user.getId(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
@@ -90,5 +93,19 @@ public class UserService {
 
         user.setRole(changeUserRoleDto.newRole());
         userRepository.save(user);
+    }
+
+    public UserListDto getAllUsers() {
+        List<UserDto> userDtos =  userRepository.findAll().stream().map(user -> new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getGender(),
+                user.getRole(),
+                Optional.ofNullable(user.getBirthday())
+        )).toList();
+
+        return new UserListDto(userDtos);
     }
 }
