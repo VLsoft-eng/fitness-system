@@ -29,7 +29,7 @@ public class UserController {
         return userService.getMyProfile();
     }
 
-    @Operation
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/get-all")
     public UserListDto getAllUsers() {
         return userService.getAllUsers();
