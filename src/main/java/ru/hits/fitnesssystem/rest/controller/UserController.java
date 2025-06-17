@@ -4,9 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hits.fitnesssystem.core.service.UserService;
 import ru.hits.fitnesssystem.rest.model.TokenDto;
@@ -14,8 +11,9 @@ import ru.hits.fitnesssystem.rest.model.UserDto;
 import ru.hits.fitnesssystem.rest.model.UserLoginDto;
 import ru.hits.fitnesssystem.rest.model.UserRegistrationDto;
 
+@RequestMapping("/user")
 @RequiredArgsConstructor
-@RestController("/user")
+@RestController()
 public class UserController {
     private final UserService userService;
 
