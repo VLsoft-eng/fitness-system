@@ -10,10 +10,7 @@ import ru.hits.fitnesssystem.core.exception.NotFoundException;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
 import ru.hits.fitnesssystem.core.security.JwtTokenProvider;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
-import ru.hits.fitnesssystem.rest.model.TokenDto;
-import ru.hits.fitnesssystem.rest.model.UserDto;
-import ru.hits.fitnesssystem.rest.model.UserLoginDto;
-import ru.hits.fitnesssystem.rest.model.UserRegistrationDto;
+import ru.hits.fitnesssystem.rest.model.*;
 
 import java.util.Optional;
 
@@ -81,5 +78,17 @@ public class UserService {
                 user.getRole(),
                 Optional.ofNullable(user.getBirthday())
         );
+    }
+
+    public void changeUserRole(ChangeUserRoleDto changeUserRoleDto) {
+        User user = userRepository.findById(changeUserRoleDto.userId())
+                .orElseThrow(() -> new NotFoundException("Пользователя с такими данными не существует"));
+
+        if (changeUserRoleDto.newRole() == UserRole.ADMIN) {
+            throw new BadRequestException("Роль ADMIN не может быть установлена");
+        }
+
+        user.setRole(changeUserRoleDto.newRole());
+        userRepository.save(user);
     }
 }
