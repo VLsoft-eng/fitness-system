@@ -24,7 +24,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd fitness-system
             git pull
-            ./gradlew build
+            ./gradlew clean build
             sudo docker compose up --build -d
           EOF
 
