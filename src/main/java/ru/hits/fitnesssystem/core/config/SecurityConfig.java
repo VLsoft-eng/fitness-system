@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/register").permitAll()
+                        .requestMatchers("/public/posts/**").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/admin-access/**").hasRole("ADMIN")
