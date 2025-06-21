@@ -15,5 +15,6 @@ public record UserRegistrationDto(
         @NotBlank(message = "Пароль не может быть пустым")
         String password,
         @NotNull(message = "Гендер не может быть пустым")
-        Gender gender
+        Gender gender,
+        String avatarBase64
 ) {}
