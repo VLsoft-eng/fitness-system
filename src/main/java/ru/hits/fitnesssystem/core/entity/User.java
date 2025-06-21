@@ -38,6 +38,9 @@ public class User {
     @Column(name = "birthday")
     private LocalDate birthday;
 
+    @Column(name = "avatar_base64", columnDefinition = "TEXT")
+    private String avatarBase64;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role = UserRole.DEFAULT_USER;

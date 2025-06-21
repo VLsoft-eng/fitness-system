@@ -31,6 +31,7 @@ public class UserController {
 
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/get-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserListDto getAllUsers() {
         return userService.getAllUsers();
     }
@@ -45,5 +46,12 @@ public class UserController {
     @PostMapping("/login")
     public TokenDto login(@Valid @RequestBody UserLoginDto userLoginDto) {
         return userService.login(userLoginDto);
+    }
+
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
+    @PutMapping("/my-profile")
+    @PreAuthorize("isAuthenticated()")
+    public UserDto updateMyProfile(@Valid @RequestBody UserUpdateDto userUpdateDto) {
+        return userService.updateMyProfile(userUpdateDto);
     }
 }

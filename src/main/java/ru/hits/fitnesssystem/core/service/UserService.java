@@ -35,6 +35,7 @@ public class UserService {
                 .lastName(userRegistrationDto.lastname())
                 .gender(userRegistrationDto.gender())
                 .role(UserRole.DEFAULT_USER)
+                .avatarBase64(userRegistrationDto.avatarBase64())
                 .build();
         userRepository.save(user);
 
@@ -45,6 +46,10 @@ public class UserService {
     public TokenDto login(UserLoginDto userLoginDto) {
         User user = userRepository.findUserByUsername(userLoginDto.username())
                 .orElseThrow(() -> new NotFoundException("Пользователя с такими данными не существует"));
+
+        if (!bcryptPasswordEncoder.matches(userLoginDto.password(), user.getHashedPassword())) {
+            throw new BadRequestException("Неверный логин или пароль");
+        }
 
         String token = jwtTokenProvider.generateToken(user.getUsername());
 
@@ -62,7 +67,8 @@ public class UserService {
                 user.getLastName(),
                 user.getGender(),
                 user.getRole(),
-                Optional.ofNullable(user.getBirthday())
+                Optional.ofNullable(user.getBirthday()),
+                user.getAvatarBase64()
         );
     }
 
@@ -79,8 +85,37 @@ public class UserService {
                 user.getLastName(),
                 user.getGender(),
                 user.getRole(),
-                Optional.ofNullable(user.getBirthday())
+                Optional.ofNullable(user.getBirthday()),
+                user.getAvatarBase64()
         );
+    }
+
+    public UserDto updateMyProfile(UserUpdateDto userUpdateDto) {
+        String currentUsername = SecurityUtils.getCurrentUsername();
+
+        User user = userRepository.findUserByUsername(currentUsername)
+                .orElseThrow(() -> new NotFoundException("Пользователя с такими данными не существует"));
+
+        if (userUpdateDto.firstname() != null) {
+            user.setFirstName(userUpdateDto.firstname());
+        }
+        if (userUpdateDto.lastname() != null) {
+            user.setLastName(userUpdateDto.lastname());
+        }
+        if (userUpdateDto.gender() != null) {
+            user.setGender(userUpdateDto.gender());
+        }
+        if (userUpdateDto.birthday() != null) {
+            user.setBirthday(userUpdateDto.birthday());
+        }
+        if (userUpdateDto.avatarBase64() != null) {
+            user.setAvatarBase64(userUpdateDto.avatarBase64());
+        } else {
+            user.setAvatarBase64(null);
+        }
+
+        userRepository.save(user);
+        return getMyProfile();
     }
 
     public void changeUserRole(ChangeUserRoleDto changeUserRoleDto) {
@@ -103,7 +138,8 @@ public class UserService {
                 user.getLastName(),
                 user.getGender(),
                 user.getRole(),
-                Optional.ofNullable(user.getBirthday())
+                Optional.ofNullable(user.getBirthday()),
+                user.getAvatarBase64()
         )).toList();
 
         return new UserListDto(userDtos);
