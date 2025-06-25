@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hits.fitnesssystem.core.entity.FullExercise;
 import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.entity.User;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
@@ -13,13 +14,11 @@ import ru.hits.fitnesssystem.core.enumeration.TrainingSessionType;
 import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
+import ru.hits.fitnesssystem.core.repository.FullExerciseRepository;
 import ru.hits.fitnesssystem.core.repository.TrainingSessionRepository;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
-import ru.hits.fitnesssystem.rest.model.CreateTrainingSessionDto;
-import ru.hits.fitnesssystem.rest.model.TrainingSessionDto;
-import ru.hits.fitnesssystem.rest.model.TrainingSessionListDto;
-import ru.hits.fitnesssystem.rest.model.UpdateTrainingSessionDto;
+import ru.hits.fitnesssystem.rest.model.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
 public class TrainingSessionService {
 
     private final TrainingSessionRepository trainingSessionRepository;
+    private final FullExerciseRepository fullExerciseRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -226,5 +226,15 @@ public class TrainingSessionService {
                 sessionPage.getNumber(),
                 sessionPage.isLast()
         );
+    }
+
+    public void attachFullExercise(AttachFullExerciseDto attachFullExerciseDto, Long trainingSessionId) {
+        TrainingSession trainingSession = trainingSessionRepository.findById(trainingSessionId).orElseThrow(() -> new NotFoundException("Тренировка не найдена"));
+        List<FullExercise> fullExercises = attachFullExerciseDto.exerciseIds().stream()
+                .map(id -> fullExerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Упражнение не найдено")))
+                .toList();
+
+        trainingSession.getFullExercises().addAll(fullExercises);
+        trainingSessionRepository.save(trainingSession);
     }
 }

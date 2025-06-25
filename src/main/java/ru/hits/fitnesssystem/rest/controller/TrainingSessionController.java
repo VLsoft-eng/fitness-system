@@ -11,10 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.hits.fitnesssystem.core.service.TrainingSessionService;
-import ru.hits.fitnesssystem.rest.model.CreateTrainingSessionDto;
-import ru.hits.fitnesssystem.rest.model.TrainingSessionDto;
-import ru.hits.fitnesssystem.rest.model.TrainingSessionListDto;
-import ru.hits.fitnesssystem.rest.model.UpdateTrainingSessionDto;
+import ru.hits.fitnesssystem.rest.model.*;
 
 import java.time.LocalDateTime;
 
@@ -69,5 +66,11 @@ public class TrainingSessionController {
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
         return trainingSessionService.getAllTrainingSessions(pageable, startDate, endDate, trainerId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    @PostMapping("/{id}/attach-full-exercise")
+    public void attachFullExercise(@PathVariable Long id, @RequestBody @Valid AttachFullExerciseDto attachFullExerciseDto) {
+
     }
 }
