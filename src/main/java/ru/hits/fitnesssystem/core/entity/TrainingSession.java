@@ -5,6 +5,8 @@ import lombok.*;
 import ru.hits.fitnesssystem.core.enumeration.TrainingSessionType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @RequiredArgsConstructor
@@ -56,6 +58,10 @@ public class TrainingSession {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "trainingSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<FullExercise> fullExercises = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
