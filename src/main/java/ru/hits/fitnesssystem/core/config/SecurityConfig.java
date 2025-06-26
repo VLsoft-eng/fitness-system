@@ -33,7 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/admin-access/**").hasRole("ADMIN")
                         .requestMatchers("/exercises/**").hasAnyRole("TRAINER", "ADMIN")
-                        .requestMatchers("/ai-trainer/**").permitAll()
+                        .requestMatchers("/ai-trainer/**").hasAnyRole("TRAINER", "ADMIN", "DEFAULT_USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
