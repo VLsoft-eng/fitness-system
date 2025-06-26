@@ -68,4 +68,9 @@ public class ExerciseController {
         exerciseService.deleteFullExercise(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/full")
+    public FullExercisesListDto getFullExercise() {
+        return exerciseService.getAllFullExercisesForCurrentTrainer();
+    }
 }

@@ -166,4 +166,28 @@ public class ExerciseService {
         }
         fullExerciseRepository.deleteById(id);
     }
+
+    public FullExercisesListDto getAllFullExercisesForCurrentTrainer() {
+        String trainerUsername = SecurityUtils.getCurrentUsername();
+        User user = userRepository.findUserByUsername(trainerUsername)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        List<FullExercise> fullExercises = fullExerciseRepository.findAllByTrainerId(user.getId());
+        List<FullExerciseDto> fullExerciseDtos = fullExercises.stream()
+                .map(fullExercise -> new FullExerciseDto(
+                        fullExercise.getId(),
+                        new ExerciseDto(
+                                fullExercise.getExercise().getId(),
+                                fullExercise.getExercise().getTitle(),
+                                fullExercise.getExercise().getDescription()
+                        ),
+                        new ApproachDto(
+                                fullExercise.getApproach().getId(),
+                                fullExercise.getApproach().getApproachesCount(),
+                                fullExercise.getApproach().getRepetitionPerApproachCount()
+                        )
+                ))
+                .toList();
+        return new FullExercisesListDto(fullExerciseDtos);
+    }
 }
