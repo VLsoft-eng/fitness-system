@@ -24,3 +24,9 @@ jwt:
   expiration-minutes: 180
 springdoc:
   override-with-generic-response: false
+yandex:
+  gpt:
+    api-key: t1.9euelZrJmpWXm5uQjsiby5qUy5PLkO3rnpWaxozNypWLkpjNksyZx5fHy5Hl8_dRUAk9-e9uTlF3_N3z9xF_Bj35725OUXf8zef1656VmoqKjJqTkc2Tk82RxsiTjMuP7_zF656VmoqKjJqTkc2Tk82RxsiTjMuP.7qv6k1Rbv_KKb_9tzqNiK-TzLcoWNwiTKDa7vDHctCW2aQneyGp21TbjvRPrnbmcaEFEd5YxD0CRP_wo3xLKDQ
+    api-url: https://llm.api.cloud.yandex.net/foundationModels/v1/completion
+    model-uri: gpt://b1gd9750elgvkl3913bb/yandexgpt
+    folder-id: b1gd9750elgvkl3913bb
