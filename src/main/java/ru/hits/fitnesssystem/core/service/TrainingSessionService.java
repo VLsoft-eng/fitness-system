@@ -228,13 +228,29 @@ public class TrainingSessionService {
         );
     }
 
+    @Transactional
     public void attachFullExercise(AttachFullExerciseDto attachFullExerciseDto, Long trainingSessionId) {
-        TrainingSession trainingSession = trainingSessionRepository.findById(trainingSessionId).orElseThrow(() -> new NotFoundException("Тренировка не найдена"));
+        TrainingSession trainingSession = trainingSessionRepository.findById(trainingSessionId)
+                .orElseThrow(() -> new NotFoundException("Тренировка не найдена"));
         List<FullExercise> fullExercises = attachFullExerciseDto.exerciseIds().stream()
-                .map(id -> fullExerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Упражнение не найдено")))
+                .map(id -> fullExerciseRepository.findById(id)
+                        .orElseThrow(() -> new NotFoundException("Упражнение с ID " + id + " не найдено")))
                 .toList();
 
         trainingSession.getFullExercises().addAll(fullExercises);
+        trainingSessionRepository.save(trainingSession);
+    }
+    @Transactional
+    public void detachFullExercise(Long trainingSessionId, Long fullExerciseId) {
+        TrainingSession trainingSession = trainingSessionRepository.findById(trainingSessionId)
+                .orElseThrow(() -> new NotFoundException("Тренировка с ID " + trainingSessionId + " не найдена"));
+        FullExercise fullExercise = fullExerciseRepository.findById(fullExerciseId)
+                .orElseThrow(() -> new NotFoundException("Упражнение с ID " + fullExerciseId + " не найдено"));
+
+        if (!trainingSession.getFullExercises().remove(fullExercise)) {
+            throw new BadRequestException("Упражнение с ID " + fullExerciseId + " не связано с тренировкой с ID " + trainingSessionId);
+        }
+
         trainingSessionRepository.save(trainingSession);
     }
 }

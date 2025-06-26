@@ -2,6 +2,7 @@ package ru.hits.fitnesssystem.core.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hits.fitnesssystem.core.entity.Approach;
 import ru.hits.fitnesssystem.core.entity.Exercise;
 import ru.hits.fitnesssystem.core.entity.FullExercise;
@@ -106,5 +107,44 @@ public class ExerciseService {
                 new ExerciseDto(fullExercise.getExercise().getId(), fullExercise.getExercise().getTitle(), fullExercise.getExercise().getDescription()),
                 new ApproachDto(fullExercise.getApproach().getId(), fullExercise.getApproach().getApproachesCount(), fullExercise.getApproach().getRepetitionPerApproachCount())
         );
+    }
+
+    @Transactional
+    public void deleteApproach(Long id) {
+        String trainerUsername = SecurityUtils.getCurrentUsername();
+        User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
+        Approach approach = approachRepository.findById(id).orElseThrow(() -> new NotFoundException("Approach not found"));
+        if (!approach.getTrainer().getId().equals(user.getId())) {
+            throw new NotFoundException("Approach does not belong to the current trainer");
+        }
+        if (fullExerciseRepository.existsByApproachId(id)) {
+            throw new IllegalStateException("Cannot delete approach because it is used in a FullExercise");
+        }
+        approachRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteExercise(Long id) {
+        String trainerUsername = SecurityUtils.getCurrentUsername();
+        User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
+        Exercise exercise = exerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Exercise not found"));
+        if (!exercise.getTrainer().getId().equals(user.getId())) {
+            throw new NotFoundException("Exercise does not belong to the current trainer");
+        }
+        if (fullExerciseRepository.existsByExerciseId(id)) {
+            throw new IllegalStateException("Cannot delete exercise because it is used in a FullExercise");
+        }
+        exerciseRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteFullExercise(Long id) {
+        String trainerUsername = SecurityUtils.getCurrentUsername();
+        User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
+        FullExercise fullExercise = fullExerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Full exercise not found"));
+        if (!fullExercise.getExercise().getTrainer().getId().equals(user.getId())) {
+            throw new NotFoundException("Full exercise does not belong to the current trainer");
+        }
+        fullExerciseRepository.deleteById(id);
     }
 }

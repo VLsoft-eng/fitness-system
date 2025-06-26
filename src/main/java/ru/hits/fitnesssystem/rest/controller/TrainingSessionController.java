@@ -71,6 +71,12 @@ public class TrainingSessionController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
     @PostMapping("/{id}/attach-full-exercise")
     public void attachFullExercise(@PathVariable Long id, @RequestBody @Valid AttachFullExerciseDto attachFullExerciseDto) {
+        trainingSessionService.attachFullExercise(attachFullExerciseDto, id);
+    }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    @PostMapping("/{id}/detach-full-exercise")
+    public void disattachFullExercise(@PathVariable Long id, @RequestBody @Valid DetachFullExerciseDto detachFullExerciseDto) {
+        trainingSessionService.detachFullExercise(id, detachFullExerciseDto.fullExerciseId());
     }
 }

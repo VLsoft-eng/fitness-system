@@ -50,4 +50,22 @@ public class ExerciseController {
         FullExerciseDto dto = exerciseService.getFullExerciseById(id);
         return ResponseEntity.ok(dto);
     }
+
+    @DeleteMapping("/approaches/{id}")
+    public ResponseEntity<Void> deleteApproach(@PathVariable Long id) {
+        exerciseService.deleteApproach(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteExercise(@PathVariable Long id) {
+        exerciseService.deleteExercise(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/full/{id}")
+    public ResponseEntity<Void> deleteFullExercise(@PathVariable Long id) {
+        exerciseService.deleteFullExercise(id);
+        return ResponseEntity.noContent().build();
+    }
 }

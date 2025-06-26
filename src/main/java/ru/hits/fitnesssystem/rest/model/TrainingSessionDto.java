@@ -4,7 +4,9 @@ import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.enumeration.TrainingSessionType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public record TrainingSessionDto(
         Long id,
@@ -20,7 +22,8 @@ public record TrainingSessionDto(
         String location,
         boolean isFull,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        List<FullExerciseDto> fullExercises
 ) {
     public static TrainingSessionDto fromEntity(TrainingSession session) {
         UserDto trainerDto = (session.getTrainer() != null)
@@ -38,6 +41,22 @@ public record TrainingSessionDto(
         boolean isFull = session.getMaxParticipants() != null &&
                 session.getCurrentParticipants() >= session.getMaxParticipants();
 
+        List<FullExerciseDto> fullExerciseDtos = session.getFullExercises().stream()
+                .map(fullExercise -> new FullExerciseDto(
+                        fullExercise.getId(),
+                        new ExerciseDto(
+                                fullExercise.getExercise().getId(),
+                                fullExercise.getExercise().getTitle(),
+                                fullExercise.getExercise().getDescription()
+                        ),
+                        new ApproachDto(
+                                fullExercise.getApproach().getId(),
+                                fullExercise.getApproach().getApproachesCount(),
+                                fullExercise.getApproach().getRepetitionPerApproachCount()
+                        )
+                ))
+                .collect(Collectors.toList());
+
         return new TrainingSessionDto(
                 session.getId(),
                 session.getName(),
@@ -52,7 +71,8 @@ public record TrainingSessionDto(
                 session.getLocation(),
                 isFull,
                 session.getCreatedAt(),
-                session.getUpdatedAt()
+                session.getUpdatedAt(),
+                fullExerciseDtos
         );
     }
 }
