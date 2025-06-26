@@ -14,12 +14,12 @@ import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @RequestMapping("/ai-trainer")
-@RestController("/ai-trainer")
+@RestController
 public class YandexController {
 
     private final CoachAIService coachAIService;
 
-    @PostMapping
+    @PostMapping("/advice")
     public CompletableFuture<ResponseEntity<CoachAIResponseDto>> getCoachAIAdvice(@RequestBody CoachAIRequestDto requestDto) {
         return coachAIService.getCoachAIAdvice(requestDto)
                 .thenApply(ResponseEntity::ok);
