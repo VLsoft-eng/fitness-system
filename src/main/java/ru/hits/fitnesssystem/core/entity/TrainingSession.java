@@ -59,7 +59,12 @@ public class TrainingSession {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "trainingSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany
+    @JoinTable(
+            name = "training_session_full_exercise",
+            joinColumns = @JoinColumn(name = "training_session_id"),
+            inverseJoinColumns = @JoinColumn(name = "full_exercise_id")
+    )
     @Builder.Default
     private List<FullExercise> fullExercises = new ArrayList<>();
 
