@@ -23,4 +23,8 @@ public class FullExercise {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approach_id", nullable = false)
     private Approach approach;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private User trainer;
 }

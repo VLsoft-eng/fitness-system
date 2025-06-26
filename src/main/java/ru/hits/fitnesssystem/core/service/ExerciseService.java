@@ -81,14 +81,24 @@ public class ExerciseService {
         );
     }
 
+    @Transactional
     public FullExerciseDto createFullExercise(FullExerciseCreateDto fullExerciseCreateDto) {
         String trainerUsername = SecurityUtils.getCurrentUsername();
         User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
-        Exercise exercise = exerciseRepository.findById(fullExerciseCreateDto.exerciseId()).orElseThrow(() -> new NotFoundException("Exercise not found"));
-        Approach approach = approachRepository.findById(fullExerciseCreateDto.approachId()).orElseThrow(() -> new NotFoundException("Approach not found"));
+        Exercise exercise = exerciseRepository.findById(fullExerciseCreateDto.exerciseId())
+                .orElseThrow(() -> new NotFoundException("Exercise not found"));
+        Approach approach = approachRepository.findById(fullExerciseCreateDto.approachId())
+                .orElseThrow(() -> new NotFoundException("Approach not found"));
+
+        // Проверка, что exercise и approach принадлежат текущему тренеру
+        if (!exercise.getTrainer().getId().equals(user.getId()) || !approach.getTrainer().getId().equals(user.getId())) {
+            throw new NotFoundException("Exercise or Approach does not belong to the current trainer");
+        }
+
         FullExercise fullExercise = FullExercise.builder()
                 .exercise(exercise)
                 .approach(approach)
+                .trainer(user)
                 .build();
 
         fullExerciseRepository.save(fullExercise);
@@ -101,11 +111,20 @@ public class ExerciseService {
     }
 
     public FullExerciseDto getFullExerciseById(Long id) {
-        FullExercise fullExercise = fullExerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Full exercise not found"));
+        FullExercise fullExercise = fullExerciseRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Full exercise not found"));
         return new FullExerciseDto(
                 fullExercise.getId(),
-                new ExerciseDto(fullExercise.getExercise().getId(), fullExercise.getExercise().getTitle(), fullExercise.getExercise().getDescription()),
-                new ApproachDto(fullExercise.getApproach().getId(), fullExercise.getApproach().getApproachesCount(), fullExercise.getApproach().getRepetitionPerApproachCount())
+                new ExerciseDto(
+                        fullExercise.getExercise().getId(),
+                        fullExercise.getExercise().getTitle(),
+                        fullExercise.getExercise().getDescription()
+                ),
+                new ApproachDto(
+                        fullExercise.getApproach().getId(),
+                        fullExercise.getApproach().getApproachesCount(),
+                        fullExercise.getApproach().getRepetitionPerApproachCount()
+                )
         );
     }
 
@@ -142,7 +161,7 @@ public class ExerciseService {
         String trainerUsername = SecurityUtils.getCurrentUsername();
         User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
         FullExercise fullExercise = fullExerciseRepository.findById(id).orElseThrow(() -> new NotFoundException("Full exercise not found"));
-        if (!fullExercise.getExercise().getTrainer().getId().equals(user.getId())) {
+        if (!fullExercise.getTrainer().getId().equals(user.getId())) {
             throw new NotFoundException("Full exercise does not belong to the current trainer");
         }
         fullExerciseRepository.deleteById(id);
