@@ -39,7 +39,7 @@ public class TrainingSessionService {
             trainer = userRepository.findById(dto.trainerId())
                     .orElseThrow(() -> new NotFoundException("Тренер с ID " + dto.trainerId() + " не найден."));
 
-            if (trainer.getRole() != UserRole.TRAINER) {
+            if (trainer.getRole() != UserRole.TRAINER && trainer.getRole() != UserRole.ADMIN) {
                 throw new BadRequestException("Пользователь с ID " + dto.trainerId() + " не является тренером.");
             }
         } else if (dto.type() == TrainingSessionType.PERSONAL) {
