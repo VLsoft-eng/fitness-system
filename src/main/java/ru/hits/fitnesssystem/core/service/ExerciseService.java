@@ -7,6 +7,7 @@ import ru.hits.fitnesssystem.core.entity.Approach;
 import ru.hits.fitnesssystem.core.entity.Exercise;
 import ru.hits.fitnesssystem.core.entity.FullExercise;
 import ru.hits.fitnesssystem.core.entity.User;
+import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
 import ru.hits.fitnesssystem.core.repository.ApproachRepository;
 import ru.hits.fitnesssystem.core.repository.ExerciseRepository;
@@ -137,7 +138,7 @@ public class ExerciseService {
             throw new NotFoundException("Approach does not belong to the current trainer");
         }
         if (fullExerciseRepository.existsByApproachId(id)) {
-            throw new IllegalStateException("Cannot delete approach because it is used in a FullExercise");
+            throw new BadRequestException("Cannot delete approach because it is used in a FullExercise");
         }
         approachRepository.deleteById(id);
     }
@@ -151,7 +152,7 @@ public class ExerciseService {
             throw new NotFoundException("Exercise does not belong to the current trainer");
         }
         if (fullExerciseRepository.existsByExerciseId(id)) {
-            throw new IllegalStateException("Cannot delete exercise because it is used in a FullExercise");
+            throw new BadRequestException("Cannot delete exercise because it is used in a FullExercise");
         }
         exerciseRepository.deleteById(id);
     }
