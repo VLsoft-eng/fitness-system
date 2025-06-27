@@ -50,7 +50,7 @@ public class TrainingSession {
     @Column(name = "current_participants", nullable = false)
     private Integer currentParticipants;
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "location")
     private String location;
 
     @Column(name = "created_at", nullable = false, updatable = false)
