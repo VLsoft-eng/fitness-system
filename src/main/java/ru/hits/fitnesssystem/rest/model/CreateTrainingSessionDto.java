@@ -26,5 +26,5 @@ public record CreateTrainingSessionDto(
         @Min(value = 1, message = "Максимальное количество участников должно быть не менее 1")
         Integer maxParticipants,
 
-        @NotBlank(message = "Место проведения не может быть пустым") String location) {
+        String location) {
 }
