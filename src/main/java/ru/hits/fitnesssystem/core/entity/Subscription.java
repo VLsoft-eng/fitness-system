@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class Subscription {
+
     @Id
     private Long id;
 
@@ -21,9 +21,11 @@ public class Subscription {
     @JoinColumn(name = "subscriber_id", nullable = false)
     private User subscriber;
 
+    @Builder.Default
     @Column(nullable = false, name = "personal_training_count")
     private Long personalTrainingCount = 0L;
 
+    @Builder.Default
     @Column(nullable = false, name = "is_active")
     private Boolean isActive = false;
 
@@ -33,3 +35,4 @@ public class Subscription {
     @Column(name = "end_date")
     private LocalDate endDate;
 }
+
