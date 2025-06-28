@@ -46,7 +46,7 @@ public class User {
     private UserRole role = UserRole.DEFAULT_USER;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "subsriprion_id", nullable = false)
+    @JoinColumn(name = "subsriprion_id")
     private Subscription subscription;
 
 }

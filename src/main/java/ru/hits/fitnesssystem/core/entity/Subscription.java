@@ -18,7 +18,7 @@ public class Subscription {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "subscriber_id", nullable = false)
+    @JoinColumn(name = "subscriber_id")
     private User subscriber;
 
     @Builder.Default
