@@ -44,8 +44,8 @@ public class EnrollmentController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/is-exists-by-training-session-for-user/{trainingSessionId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping("/is-exists-by-training-session-for-user/{trainingSessionId}")
+    @ResponseStatus(HttpStatus.OK)
     public boolean isExistsEnrollmentByTrainingSessionId(@PathVariable Long trainingSessionId) {
         return enrollmentService.isTrainingSessionAssigned(trainingSessionId);
     }
