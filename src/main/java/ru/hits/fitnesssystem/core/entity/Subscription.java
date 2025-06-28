@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class Subscription {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
