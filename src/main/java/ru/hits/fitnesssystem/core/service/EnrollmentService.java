@@ -40,6 +40,16 @@ public class EnrollmentService {
         User user = userRepository.findUserByUsername(currentUsername)
                 .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
 
+        // Проверка подписки
+        if (user.getSubscription() == null || !Boolean.TRUE.equals(user.getSubscription().getIsActive())) {
+            throw new BadRequestException("У вас нет активной подписки.");
+        }
+
+        Long remainingTrainings = user.getSubscription().getPersonalTrainingCount();
+        if (remainingTrainings == null || remainingTrainings <= 0) {
+            throw new BadRequestException("У вас не осталось доступных тренировок.");
+        }
+
         TrainingSession session = trainingSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Занятие с ID " + sessionId + " не найдено."));
 
@@ -53,16 +63,15 @@ public class EnrollmentService {
         }
 
         EnrollmentStatus status;
-        if (session.getType() == TrainingSessionType.GROUP && session.getCurrentParticipants() < session.getMaxParticipants()) {
-            status = EnrollmentStatus.CONFIRMED;
+
+        // Проверка типа и свободных мест
+        if (session.getCurrentParticipants() < session.getMaxParticipants()) {
             session.setCurrentParticipants(session.getCurrentParticipants() + 1);
-        } else if (session.getType() == TrainingSessionType.PERSONAL) {
-            if (session.getCurrentParticipants() < session.getMaxParticipants()) {
-                status = EnrollmentStatus.CONFIRMED;
-                session.setCurrentParticipants(session.getCurrentParticipants() + 1);
-            } else {
-                throw new BadRequestException("Персональная тренировка уже занята.");
-            }
+            status = EnrollmentStatus.CONFIRMED;
+
+            // Списание тренировки
+            user.getSubscription().setPersonalTrainingCount(remainingTrainings - 1);
+            userRepository.save(user); // сохранит также subscription, если стоит cascade
         } else {
             status = EnrollmentStatus.WAITLIST;
         }
@@ -78,6 +87,7 @@ public class EnrollmentService {
         enrollment = enrollmentRepository.save(enrollment);
         return EnrollmentDto.fromEntity(enrollment);
     }
+
 
     @Transactional
     public void cancelEnrollment(Long enrollmentId) {
@@ -109,6 +119,14 @@ public class EnrollmentService {
             session.setCurrentParticipants(session.getCurrentParticipants() - 1);
             trainingSessionRepository.save(session);
 
+            // Возврат списанного занятия
+            if (currentUser.getSubscription() != null) {
+                Long currentCount = currentUser.getSubscription().getPersonalTrainingCount();
+                currentUser.getSubscription().setPersonalTrainingCount(currentCount + 1);
+                userRepository.save(currentUser); // сохраняем изменения
+            }
+
+            // Перевод из ожидания
             List<Enrollment> waitlist = enrollmentRepository.findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(session, EnrollmentStatus.WAITLIST);
             if (!waitlist.isEmpty()) {
                 Enrollment nextInWaitlist = waitlist.get(0);

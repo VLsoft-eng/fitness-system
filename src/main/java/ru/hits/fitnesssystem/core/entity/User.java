@@ -44,4 +44,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role = UserRole.DEFAULT_USER;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "subsriprion_id", nullable = false)
+    private Subscription subscription;
+
 }

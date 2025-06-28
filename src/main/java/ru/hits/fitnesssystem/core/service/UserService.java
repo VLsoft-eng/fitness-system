@@ -3,10 +3,12 @@ package ru.hits.fitnesssystem.core.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.hits.fitnesssystem.core.entity.Subscription;
 import ru.hits.fitnesssystem.core.entity.User;
 import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
+import ru.hits.fitnesssystem.core.repository.SubscriptionRepository;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
 import ru.hits.fitnesssystem.core.security.JwtTokenProvider;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
@@ -21,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bcryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final SubscriptionRepository subscriptionRepository;
 
     public TokenDto register(UserRegistrationDto userRegistrationDto) {
         if (userRepository.existsUserByUsername(userRegistrationDto.username())) {
@@ -38,6 +41,11 @@ public class UserService {
                 .avatarBase64(userRegistrationDto.avatarBase64())
                 .build();
         userRepository.save(user);
+
+        Subscription subscription = Subscription.builder()
+                .subscriber(user)
+                .build();
+        subscriptionRepository.save(subscription);
 
         String token = jwtTokenProvider.generateToken(user.getUsername());
         return new TokenDto(token);
