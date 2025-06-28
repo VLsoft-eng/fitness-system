@@ -42,4 +42,11 @@ public class EnrollmentController {
     public EnrollmentListDto getSessionEnrollments(@PathVariable Long sessionId) {
         return enrollmentService.getSessionEnrollments(sessionId);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/is-exists-by-training-session-for-user/{trainingSessionId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public boolean isExistsEnrollmentByTrainingSessionId(@PathVariable Long trainingSessionId) {
+        return enrollmentService.isTrainingSessionAssigned(trainingSessionId);
+    }
 }

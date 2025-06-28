@@ -22,4 +22,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(TrainingSession trainingSession, EnrollmentStatus status);
 
     boolean existsByUserAndTrainingSessionAndStatusIn(User user, TrainingSession trainingSession, List<EnrollmentStatus> statuses);
+
+    boolean existsByUserIdAndTrainingSessionIdAndStatusNot(Long userId, Long trainingSessionId, EnrollmentStatus status);
+
 }

@@ -167,4 +167,17 @@ public class EnrollmentService {
 
         return new EnrollmentListDto(enrollmentDtos);
     }
+
+    public Boolean isTrainingSessionAssigned(Long trainingSessionId) {
+        String currentUsername = SecurityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new BadRequestException("Пользователь не авторизован");
+        }
+
+        User currentUser = userRepository.findUserByUsername(currentUsername)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        return enrollmentRepository.existsByUserIdAndTrainingSessionIdAndStatusNot(
+                currentUser.getId(), trainingSessionId, EnrollmentStatus.CANCELLED);
+    }
 }
