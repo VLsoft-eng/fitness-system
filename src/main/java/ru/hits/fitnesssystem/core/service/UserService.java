@@ -33,7 +33,6 @@ public class UserService {
         String encodedPassword = bcryptPasswordEncoder.encode(userRegistrationDto.password());
         Subscription subscription = Subscription.builder()
                 .build();
-        subscriptionRepository.save(subscription);
         User user = User.builder()
                 .username(userRegistrationDto.username())
                 .hashedPassword(encodedPassword)
