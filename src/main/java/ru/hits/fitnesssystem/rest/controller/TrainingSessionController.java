@@ -36,7 +36,7 @@ public class TrainingSessionController {
         return trainingSessionService.updateTrainingSession(id, dto);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTrainingSession(@PathVariable Long id) {
