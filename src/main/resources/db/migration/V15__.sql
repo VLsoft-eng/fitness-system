@@ -20,7 +20,7 @@ CREATE TABLE subscription (
                                       ON DELETE CASCADE
 );
 
--- 3. Добавление колонки подписки в таблицу пользователей (сначала nullable)
+-- 3. Добавление колонки подписки в таблицу пользователей (оставляем nullable)
 ALTER TABLE users
     ADD COLUMN subscription_id BIGINT UNIQUE;
 
@@ -44,19 +44,4 @@ SET subscription_id = s.id
     FROM subscription s
 WHERE s.subscriber_id = u.id;
 
--- 7. Сделать колонку subscription_id NOT NULL после заполнения
-ALTER TABLE users
-    ALTER COLUMN subscription_id SET NOT NULL;
-
--- 8. (Опционально) Проверка целостности данных
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM users u
-        LEFT JOIN subscription s ON s.id = u.subscription_id
-        WHERE u.subscription_id IS NOT NULL AND s.id IS NULL
-    ) THEN
-        RAISE EXCEPTION 'Обнаружены пользователи с некорректными subscription_id';
-END IF;
-END$$;
+-- 7. (Удалён шаг с ALTER COLUMN subscription_id SET NOT NULL)
