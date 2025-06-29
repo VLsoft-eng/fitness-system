@@ -86,6 +86,14 @@ public class TrainingSessionService {
         TrainingSession existingSession = trainingSessionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Занятие с ID " + id + " не найдено."));
 
+        if (existingSession.getCurrentParticipants() > 0) {
+            throw new BadRequestException("Невозможно удалить занятие, так как на него есть записавшиеся пользователи. Сначала отмените все записи.");
+        }
+
+        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.WAITLIST)) {
+            throw new BadRequestException("Невозможно удалить занятие, так как на него есть пользователи в листе ожидания. Сначала отмените все записи.");
+        }
+
         String currentUsername = SecurityUtils.getCurrentUsername();
         User currentUser = userRepository.findUserByUsername(currentUsername)
                 .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));

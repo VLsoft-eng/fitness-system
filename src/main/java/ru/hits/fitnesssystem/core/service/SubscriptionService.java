@@ -47,6 +47,9 @@ public class SubscriptionService {
         User user = getCurrentUserWithSubscription();
 
         Subscription subscription = user.getSubscription();
+        if (subscription == null) {
+            throw new BadRequestException("У вас нет абонемента. Обратитесь к администратору");
+        }
         LocalDate today = LocalDate.now();
 
         if (subscription.getEndDate() == null || subscription.getEndDate().isBefore(today)) {
@@ -69,6 +72,9 @@ public class SubscriptionService {
         User user = getCurrentUserWithSubscription();
 
         Subscription subscription = user.getSubscription();
+        if (subscription == null) {
+            throw new BadRequestException("У вас нет абонемента. Обратитесь к администратору");
+        }
         if (!Boolean.TRUE.equals(subscription.getIsActive())) {
             throw new BadRequestException("Нельзя покупать тренировки при неактивной подписке.");
         }
