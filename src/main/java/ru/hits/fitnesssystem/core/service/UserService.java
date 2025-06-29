@@ -31,16 +31,6 @@ public class UserService {
         }
 
         String encodedPassword = bcryptPasswordEncoder.encode(userRegistrationDto.password());
-        Subscription subscription = Subscription.builder()
-                .build();
-
-        try {
-            subscriptionRepository.save(subscription);
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println("penis");
-        }
         User user = User.builder()
                 .username(userRegistrationDto.username())
                 .hashedPassword(encodedPassword)
@@ -49,9 +39,15 @@ public class UserService {
                 .gender(userRegistrationDto.gender())
                 .role(UserRole.DEFAULT_USER)
                 .avatarBase64(userRegistrationDto.avatarBase64())
-                .subscription(subscription)
                 .build();
-        userRepository.save(user);
+
+        Subscription subscription = Subscription.builder()
+                .subscriber(user)
+                .build();
+
+        user.setSubscription(subscription); // Set the bidirectional relationship
+        subscriptionRepository.save(subscription); // Save subscription first
+        userRepository.save(user); // Save user with the subscription
 
         String token = jwtTokenProvider.generateToken(user.getUsername());
         return new TokenDto(token);
