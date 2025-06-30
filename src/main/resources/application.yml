@@ -26,7 +26,7 @@ springdoc:
   override-with-generic-response: false
 yandex:
   gpt:
-    api-key: t1.9euelZqdlJLOkI2bisfLiY-Yk5qXje3rnpWaxozNypWLkpjNksyZx5fHy5Hl8_c1DgA9-e8iDUFt_N3z93U8fTz57yINQW38zef1656VmpOSlYzNk5qal5aWjJzNlpKJ7_zF656VmpOSlYzNk5qal5aWjJzNlpKJ.6tYWBJdgpSgU5iD9pwfBwYJ14xcCQEnNJYAqSbCNWuTluFnGdR9JK4jZuBkDpu46Bm5PKvgYlSxWMf1UhIDmDA
+    api-key: t1.9euelZqcz4qezs6NkIuVjZWexpbIyu3rnpWaxozNypWLkpjNksyZx5fHy5Hl8_cmDng8-e9jaEVp_d3z92Y8dTz572NoRWn9zef1656VmpbJyJPLnovJzsaKlIrHy8eP7_zF656VmpbJyJPLnovJzsaKlIrHy8eP.Y7Hm8PHXAqLkGO_3w-hWWucKdTIvcn1lhRF_p0Lt2kLKh6XJFtyfooTjHzVqPuPzo7bqt2_783YUWPt_roaBDw
     api-url: https://llm.api.cloud.yandex.net/foundationModels/v1/completion
     model-uri: gpt://b1gd9750elgvkl3913bb/yandexgpt
     folder-id: b1gd9750elgvkl3913bb
