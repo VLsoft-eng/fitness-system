@@ -14,8 +14,10 @@ import ru.hits.fitnesssystem.core.security.JwtTokenProvider;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
 import ru.hits.fitnesssystem.rest.model.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -153,5 +155,35 @@ public class UserService {
         )).toList();
 
         return new UserListDto(userDtos);
+    }
+
+    public UserListDto getAllTrainers(String query) {
+        Set<User> uniqueTrainers = new HashSet<>();
+
+        if (query != null && !query.trim().isEmpty()) {
+            String trimmedQuery = query.trim();
+            String[] queryWords = trimmedQuery.split("\\s+");
+
+            for (String word : queryWords) {
+                uniqueTrainers.addAll(userRepository.findAllByRoleAndSearchTerm(UserRole.TRAINER, word));
+            }
+            uniqueTrainers.addAll(userRepository.findAllByRoleAndSearchTerm(UserRole.TRAINER, trimmedQuery));
+
+        } else {
+            uniqueTrainers.addAll(userRepository.findAllByRole(UserRole.TRAINER));
+        }
+
+        List<UserDto> trainerDtos = uniqueTrainers.stream().map(user -> new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getGender(),
+                user.getRole(),
+                Optional.ofNullable(user.getBirthday()),
+                user.getAvatarBase64()
+        )).toList();
+
+        return new UserListDto(trainerDtos);
     }
 }

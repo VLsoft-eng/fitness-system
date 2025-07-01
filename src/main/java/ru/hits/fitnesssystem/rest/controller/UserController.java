@@ -54,4 +54,12 @@ public class UserController {
     public UserDto updateMyProfile(@Valid @RequestBody UserUpdateDto userUpdateDto) {
         return userService.updateMyProfile(userUpdateDto);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/trainers")
+    public UserListDto getAllTrainers(
+            @RequestParam(required = false) String query
+    ) {
+        return userService.getAllTrainers(query);
+    }
 }
