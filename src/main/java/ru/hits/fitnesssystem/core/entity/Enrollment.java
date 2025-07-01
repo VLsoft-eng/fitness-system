@@ -2,6 +2,7 @@ package ru.hits.fitnesssystem.core.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.hits.fitnesssystem.core.enumeration.EnrollmentCallType;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,10 @@ public class Enrollment {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private EnrollmentStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "enrollment_call_type")
+    private EnrollmentCallType enrollmentCallType;
 
     @PrePersist
     protected void onCreate() {

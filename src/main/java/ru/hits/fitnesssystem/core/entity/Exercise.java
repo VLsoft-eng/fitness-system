@@ -25,4 +25,8 @@ public class Exercise {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
+
+    @ManyToOne
+    @JoinColumn(name = "train_machine_id")
+    private TrainMachine trainMachine;
 }

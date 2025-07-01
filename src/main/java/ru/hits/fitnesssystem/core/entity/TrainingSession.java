@@ -68,6 +68,10 @@ public class TrainingSession {
     @Builder.Default
     private List<FullExercise> fullExercises = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "gym_room_id")
+    private GymRoom gymRoom;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
