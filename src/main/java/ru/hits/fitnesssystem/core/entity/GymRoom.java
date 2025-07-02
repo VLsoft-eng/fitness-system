@@ -16,6 +16,7 @@ import java.util.ArrayList;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class GymRoom {
 
     @Id
@@ -38,6 +39,10 @@ public class GymRoom {
     @Column(name = "capacity", nullable = false)
     private Long capacity;
 
+    @Column(name = "base64_image", columnDefinition = "TEXT")
+    private String base64Image;
+
     @OneToMany(mappedBy = "gymRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<TrainMachine> trainMachines = new ArrayList<>();
 }
