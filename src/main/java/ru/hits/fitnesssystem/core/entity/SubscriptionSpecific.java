@@ -3,7 +3,7 @@ package ru.hits.fitnesssystem.core.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Table(name = "subscription")
+@Table(name = "subscription_specific")
 @Entity
 @Getter
 @Setter

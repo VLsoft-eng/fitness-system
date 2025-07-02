@@ -3,16 +3,10 @@ package ru.hits.fitnesssystem.core.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hits.fitnesssystem.core.entity.Approach;
-import ru.hits.fitnesssystem.core.entity.Exercise;
-import ru.hits.fitnesssystem.core.entity.FullExercise;
-import ru.hits.fitnesssystem.core.entity.User;
+import ru.hits.fitnesssystem.core.entity.*;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
-import ru.hits.fitnesssystem.core.repository.ApproachRepository;
-import ru.hits.fitnesssystem.core.repository.ExerciseRepository;
-import ru.hits.fitnesssystem.core.repository.FullExerciseRepository;
-import ru.hits.fitnesssystem.core.repository.UserRepository;
+import ru.hits.fitnesssystem.core.repository.*;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
 import ru.hits.fitnesssystem.rest.model.*;
 
@@ -25,6 +19,7 @@ public class ExerciseService {
     private final FullExerciseRepository fullExerciseRepository;
     private final ApproachRepository approachRepository;
     private final UserRepository userRepository;
+    private final TrainMachineRepository trainMachineRepository;
 
     public ApproachDto createApproach(ApproachCreateDto approachCreateDto) {
         String trainerUsername = SecurityUtils.getCurrentUsername();
@@ -90,6 +85,9 @@ public class ExerciseService {
                 .orElseThrow(() -> new NotFoundException("Exercise not found"));
         Approach approach = approachRepository.findById(fullExerciseCreateDto.approachId())
                 .orElseThrow(() -> new NotFoundException("Approach not found"));
+        TrainMachine trainMachine = trainMachineRepository.findById(fullExerciseCreateDto.trainMachineId())
+                .orElseThrow(() -> new NotFoundException("Train machine not found"));
+
 
         // Проверка, что exercise и approach принадлежат текущему тренеру
         if (!exercise.getTrainer().getId().equals(user.getId()) || !approach.getTrainer().getId().equals(user.getId())) {
@@ -100,6 +98,7 @@ public class ExerciseService {
                 .exercise(exercise)
                 .approach(approach)
                 .trainer(user)
+                .trainingMachine(trainMachine)
                 .build();
 
         fullExerciseRepository.save(fullExercise);
@@ -107,7 +106,8 @@ public class ExerciseService {
         return new FullExerciseDto(
                 fullExercise.getId(),
                 new ExerciseDto(exercise.getId(), exercise.getTitle(), exercise.getDescription()),
-                new ApproachDto(approach.getId(), approach.getApproachesCount(), approach.getRepetitionPerApproachCount())
+                new ApproachDto(approach.getId(), approach.getApproachesCount(), approach.getRepetitionPerApproachCount()),
+                new TrainMachineDto(trainMachine.getId(), trainMachine.getName(), trainMachine.getDescription(), trainMachine.getBase64Image(), trainMachine.getCount(), trainMachine.getGymRoom().getId())
         );
     }
 
@@ -125,6 +125,14 @@ public class ExerciseService {
                         fullExercise.getApproach().getId(),
                         fullExercise.getApproach().getApproachesCount(),
                         fullExercise.getApproach().getRepetitionPerApproachCount()
+                ),
+                new TrainMachineDto(
+                        fullExercise.getTrainingMachine().getId(),
+                        fullExercise.getTrainingMachine().getName(),
+                        fullExercise.getTrainingMachine().getDescription(),
+                        fullExercise.getTrainingMachine().getBase64Image(),
+                        fullExercise.getTrainingMachine().getCount(),
+                        fullExercise.getTrainingMachine().getGymRoom().getId()
                 )
         );
     }
@@ -186,6 +194,14 @@ public class ExerciseService {
                                 fullExercise.getApproach().getId(),
                                 fullExercise.getApproach().getApproachesCount(),
                                 fullExercise.getApproach().getRepetitionPerApproachCount()
+                        ),
+                        new TrainMachineDto(
+                                fullExercise.getTrainingMachine().getId(),
+                                fullExercise.getTrainingMachine().getName(),
+                                fullExercise.getTrainingMachine().getDescription(),
+                                fullExercise.getTrainingMachine().getBase64Image(),
+                                fullExercise.getTrainingMachine().getCount(),
+                                fullExercise.getTrainingMachine().getGymRoom().getId()
                         )
                 ))
                 .toList();

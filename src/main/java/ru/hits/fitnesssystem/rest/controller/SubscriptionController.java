@@ -28,5 +28,10 @@ public class SubscriptionController {
     public void buyPersonalTrainings(@RequestBody PersonalTrainingPurchaseRequest request) {
         subscriptionService.buyPersonalTrainings(request);
     }
+
+    @PostMapping("/assign-specific/{subscriptionSpecificId}")
+    public void assignSpecificTrainings(@PathVariable Long subscriptionSpecificId) {
+        subscriptionService.assignSpecificSubscription(subscriptionSpecificId);
+    }
 }
 

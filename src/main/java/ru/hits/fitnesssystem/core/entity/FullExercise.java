@@ -27,4 +27,12 @@ public class FullExercise {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gym_room_id")
+    private GymRoom gymRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_machine_id")
+    private TrainMachine trainingMachine;
 }

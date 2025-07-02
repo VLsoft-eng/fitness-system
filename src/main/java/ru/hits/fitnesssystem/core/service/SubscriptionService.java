@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hits.fitnesssystem.core.entity.Subscription;
+import ru.hits.fitnesssystem.core.entity.SubscriptionSpecific;
 import ru.hits.fitnesssystem.core.entity.User;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
+import ru.hits.fitnesssystem.core.repository.SubscriptionSpecificRepository;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
 import ru.hits.fitnesssystem.rest.model.SubscriptionDto;
@@ -19,6 +21,7 @@ import java.time.LocalDate;
 public class SubscriptionService {
 
     private final UserRepository userRepository;
+    private final SubscriptionSpecificRepository specificRepository;
 
     @Transactional(readOnly = true)
     public SubscriptionDto getMySubscription() {
@@ -63,6 +66,26 @@ public class SubscriptionService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void assignSpecificSubscription(Long subscriptionSpecificId) {
+        SubscriptionSpecific subscriptionSpecific = specificRepository.findById(subscriptionSpecificId)
+                .orElseThrow(() -> new NotFoundException("Специфичного абонемента нет"));
+
+        User user = getCurrentUserWithSubscription();
+        Subscription subscription = user.getSubscription();
+
+        Long newTrainingCount = subscription.getPersonalTrainingCount() + subscriptionSpecific.getPersonalTrainingCount();
+        subscription.setPersonalTrainingCount(newTrainingCount);
+
+        LocalDate today = LocalDate.now();
+        if (!subscription.getIsActive()) {
+            subscription.setStartDate(today);
+            subscription.setEndDate(today.plusDays(subscriptionSpecific.getSubscriptionDaysCount()));
+            subscription.setIsActive(true);
+        } else {
+            subscription.setEndDate(subscription.getEndDate().plusDays(subscriptionSpecific.getSubscriptionDaysCount()));
+        }
+    }
     @Transactional
     public void buyPersonalTrainings(PersonalTrainingPurchaseRequest request) {
         if (request.count() <= 0) {
