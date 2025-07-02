@@ -49,6 +49,11 @@ public class SubscriptionSpecificService {
         return new SubscriptionSpecificListDto(subscriptions);
     }
 
+    @Transactional(readOnly = true)
+    public void deleteById(Long id) {
+        repository.deleteById(id);
+    }
+
     private SubscriptionSpecificResponseDto toResponseDto(SubscriptionSpecific entity) {
         return new SubscriptionSpecificResponseDto(
                 entity.getId(),

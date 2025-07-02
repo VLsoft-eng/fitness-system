@@ -25,6 +25,12 @@ public class SubscriptionSpecificController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{subscriptionSpecificId")
+    public void create(@PathVariable Long subscriptionSpecificId) {
+        service.deleteById(subscriptionSpecificId);
+    }
+
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionSpecificResponseDto> getById(@PathVariable Long id) {
