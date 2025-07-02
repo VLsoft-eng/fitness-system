@@ -90,7 +90,7 @@ public class TrainingSessionService {
             throw new BadRequestException("Невозможно удалить занятие, так как на него есть записавшиеся пользователи. Сначала отмените все записи.");
         }
 
-        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.WAITLIST)) {
+        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.PENDING)) {
             throw new BadRequestException("Невозможно удалить занятие, так как на него есть пользователи в листе ожидания. Сначала отмените все записи.");
         }
 
@@ -187,7 +187,7 @@ public class TrainingSessionService {
             throw new BadRequestException("Невозможно удалить занятие, так как на него есть записавшиеся пользователи. Сначала отмените все записи.");
         }
 
-        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.WAITLIST)) {
+        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.PENDING)) {
             throw new BadRequestException("Невозможно удалить занятие, так как на него есть пользователи в листе ожидания. Сначала отмените все записи.");
         }
         trainingSessionRepository.delete(session);

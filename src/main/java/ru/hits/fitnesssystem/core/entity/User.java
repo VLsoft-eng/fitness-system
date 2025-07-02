@@ -6,6 +6,7 @@ import ru.hits.fitnesssystem.core.enumeration.Gender;
 import ru.hits.fitnesssystem.core.enumeration.UserRole;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @RequiredArgsConstructor
@@ -49,4 +50,11 @@ public class User {
     @JoinColumn(name = "subscription_id")
     private Subscription subscription;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

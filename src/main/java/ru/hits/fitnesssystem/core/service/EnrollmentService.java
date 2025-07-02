@@ -40,7 +40,6 @@ public class EnrollmentService {
         User user = userRepository.findUserByUsername(currentUsername)
                 .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
 
-        // Проверка подписки
         if (user.getSubscription() == null || !Boolean.TRUE.equals(user.getSubscription().getIsActive())) {
             throw new BadRequestException("У вас нет активной подписки.");
         }
@@ -58,22 +57,20 @@ public class EnrollmentService {
         }
 
         if (enrollmentRepository.existsByUserAndTrainingSessionAndStatusIn(user, session,
-                Arrays.asList(EnrollmentStatus.CONFIRMED, EnrollmentStatus.WAITLIST))) {
+                Arrays.asList(EnrollmentStatus.CONFIRMED, EnrollmentStatus.PENDING))) {
             throw new BadRequestException("Вы уже записаны на это занятие или находитесь в листе ожидания.");
         }
 
         EnrollmentStatus status;
 
-        // Проверка типа и свободных мест
         if (session.getCurrentParticipants() < session.getMaxParticipants()) {
             session.setCurrentParticipants(session.getCurrentParticipants() + 1);
             status = EnrollmentStatus.CONFIRMED;
 
-            // Списание тренировки
             user.getSubscription().setPersonalTrainingCount(remainingTrainings - 1);
-            userRepository.save(user); // сохранит также subscription, если стоит cascade
+            userRepository.save(user);
         } else {
-            status = EnrollmentStatus.WAITLIST;
+            status = EnrollmentStatus.PENDING;
         }
 
         trainingSessionRepository.save(session);
@@ -119,15 +116,13 @@ public class EnrollmentService {
             session.setCurrentParticipants(session.getCurrentParticipants() - 1);
             trainingSessionRepository.save(session);
 
-            // Возврат списанного занятия
             if (currentUser.getSubscription() != null) {
                 Long currentCount = currentUser.getSubscription().getPersonalTrainingCount();
                 currentUser.getSubscription().setPersonalTrainingCount(currentCount + 1);
-                userRepository.save(currentUser); // сохраняем изменения
+                userRepository.save(currentUser);
             }
 
-            // Перевод из ожидания
-            List<Enrollment> waitlist = enrollmentRepository.findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(session, EnrollmentStatus.WAITLIST);
+            List<Enrollment> waitlist = enrollmentRepository.findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(session, EnrollmentStatus.PENDING);
             if (!waitlist.isEmpty()) {
                 Enrollment nextInWaitlist = waitlist.get(0);
                 nextInWaitlist.setStatus(EnrollmentStatus.CONFIRMED);

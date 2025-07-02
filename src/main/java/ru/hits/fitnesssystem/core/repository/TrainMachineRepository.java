@@ -16,4 +16,10 @@ public interface TrainMachineRepository extends JpaRepository<TrainMachine, Long
     List<TrainMachine> findByGymRoomIdAndNameContainingIgnoreCase(@Param("gymRoomId") Long gymRoomId, @Param("name") String name);
 
     List<TrainMachine> findByNameContainingIgnoreCase(String name);
+
+    @Query("SELECT SUM(tm.count) FROM TrainMachine tm")
+    Long sumAllTrainMachineCounts();
+
+    @Query("SELECT tm.gymRoom.name, SUM(tm.count) FROM TrainMachine tm GROUP BY tm.gymRoom.name")
+    List<Object[]> sumTrainMachineCountsByGymRoom();
 }
