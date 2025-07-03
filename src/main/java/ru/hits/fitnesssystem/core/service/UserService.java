@@ -47,9 +47,9 @@ public class UserService {
                 .subscriber(user)
                 .build();
 
-        user.setSubscription(subscription); // Set the bidirectional relationship
-        subscriptionRepository.save(subscription); // Save subscription first
-        userRepository.save(user); // Save user with the subscription
+        user.setSubscription(subscription);
+        subscriptionRepository.save(subscription);
+        userRepository.save(user);
 
         String token = jwtTokenProvider.generateToken(user.getUsername());
         return new TokenDto(token);
@@ -142,8 +142,24 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public UserListDto getAllUsers() {
-        List<UserDto> userDtos =  userRepository.findAll().stream().map(user -> new UserDto(
+    public UserListDto getAllUsers(String searchTerm, UserRole role) {
+        List<User> users;
+
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            if (role != null) {
+                users = userRepository.findAllByRoleAndSearchTerm(role, searchTerm);
+            } else {
+                users = userRepository.findAllBySearchTerm(searchTerm);
+            }
+        } else {
+            if (role != null) {
+                users = userRepository.findAllByRole(role);
+            } else {
+                users = userRepository.findAll();
+            }
+        }
+
+        List<UserDto> userDtos = users.stream().map(user -> new UserDto(
                 user.getId(),
                 user.getUsername(),
                 user.getFirstName(),
