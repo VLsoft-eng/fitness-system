@@ -26,6 +26,6 @@ public class SubscriptionSpecific {
     private Long personalTrainingCount = 0L;
 
     @Builder.Default
-    @Column(nullable = false, name = "subscritiption_days_count")
+    @Column(nullable = false, name = "subscription_days_count")
     private Long subscriptionDaysCount = 0L;
 }

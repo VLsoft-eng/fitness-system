@@ -26,8 +26,8 @@ public class SubscriptionSpecificController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{subscriptionSpecificId")
-    public void create(@PathVariable Long subscriptionSpecificId) {
+    @DeleteMapping("/{subscriptionSpecificId}")
+    public void delete(@PathVariable Long subscriptionSpecificId) {
         service.deleteById(subscriptionSpecificId);
     }
 

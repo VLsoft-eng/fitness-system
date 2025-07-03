@@ -49,8 +49,11 @@ public class SubscriptionSpecificService {
         return new SubscriptionSpecificListDto(subscriptions);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void deleteById(Long id) {
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("Subscription not found with id: " + id);
+        }
         repository.deleteById(id);
     }
 

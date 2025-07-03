@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.service.UserService;
 import ru.hits.fitnesssystem.rest.model.*;
 
@@ -29,11 +30,13 @@ public class UserController {
         return userService.getMyProfile();
     }
 
-    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/get-all")
     @PreAuthorize("hasRole('ADMIN')")
-    public UserListDto getAllUsers() {
-        return userService.getAllUsers();
+    public UserListDto getAllUsers(
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) UserRole role
+    ) {
+        return userService.getAllUsers(searchTerm, role);
     }
 
     @Operation

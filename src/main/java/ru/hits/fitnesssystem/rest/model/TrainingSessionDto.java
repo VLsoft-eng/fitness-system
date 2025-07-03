@@ -1,5 +1,7 @@
 package ru.hits.fitnesssystem.rest.model;
 
+import ru.hits.fitnesssystem.core.entity.Exercise;
+import ru.hits.fitnesssystem.core.entity.TrainMachine;
 import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.enumeration.TrainingSessionType;
 
@@ -41,20 +43,44 @@ public record TrainingSessionDto(
         boolean isFull = session.getMaxParticipants() != null &&
                 session.getCurrentParticipants() >= session.getMaxParticipants();
 
+        var toExerciseDto = new java.util.function.Function<Exercise, ExerciseDto>() {
+            @Override
+            public ExerciseDto apply(Exercise exercise) {
+                return new ExerciseDto(
+                        exercise.getId(),
+                        exercise.getTitle(),
+                        exercise.getDescription()
+                );
+            }
+        };
+
+
         List<FullExerciseDto> fullExerciseDtos = session.getFullExercises().stream()
-                .map(fullExercise -> new FullExerciseDto(
-                        fullExercise.getId(),
-                        new ExerciseDto(
-                                fullExercise.getExercise().getId(),
-                                fullExercise.getExercise().getTitle(),
-                                fullExercise.getExercise().getDescription()
-                        ),
-                        new ApproachDto(
-                                fullExercise.getApproach().getId(),
-                                fullExercise.getApproach().getApproachesCount(),
-                                fullExercise.getApproach().getRepetitionPerApproachCount()
-                        )
-                ))
+                .map(fullExercise -> {
+                    TrainMachineDto fullExerciseTrainingMachineDto = null;
+                    TrainMachine trainingMachineEntity = fullExercise.getTrainingMachine();
+                    if (trainingMachineEntity != null) {
+                        fullExerciseTrainingMachineDto = new TrainMachineDto(
+                                trainingMachineEntity.getId(),
+                                trainingMachineEntity.getName(),
+                                trainingMachineEntity.getDescription(),
+                                trainingMachineEntity.getBase64Image(),
+                                trainingMachineEntity.getCount(),
+                                trainingMachineEntity.getGymRoom() != null ? trainingMachineEntity.getGymRoom().getId() : null
+                        );
+                    }
+
+                    return new FullExerciseDto(
+                            fullExercise.getId(),
+                            toExerciseDto.apply(fullExercise.getExercise()),
+                            new ApproachDto(
+                                    fullExercise.getApproach().getId(),
+                                    fullExercise.getApproach().getApproachesCount(),
+                                    fullExercise.getApproach().getRepetitionPerApproachCount()
+                            ),
+                            fullExerciseTrainingMachineDto
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new TrainingSessionDto(

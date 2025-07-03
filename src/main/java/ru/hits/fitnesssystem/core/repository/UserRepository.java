@@ -16,15 +16,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findUserByUsername(String username);
     boolean existsUserByUsername(String username);
     List<User> findAllByRole(UserRole role);
+
     @Query("SELECT u FROM User u WHERE u.role = :role AND (" +
             "LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
             "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
             "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(CONCAT(u.lastName, ' ', u.firstName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')))"
-    )
+            "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR "
+            + "LOWER(CONCAT(u.lastName, ' ', u.firstName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     List<User> findAllByRoleAndSearchTerm(@Param("role") UserRole role,
                                           @Param("searchTerm") String searchTerm);
+
+    @Query("SELECT u FROM User u WHERE " +
+            "LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(CONCAT(u.lastName, ' ', u.firstName)) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<User> findAllBySearchTerm(@Param("searchTerm") String searchTerm);
+
 
     @Query("SELECT u.role, COUNT(u) FROM User u GROUP BY u.role")
     List<Object[]> countUsersByRole();
