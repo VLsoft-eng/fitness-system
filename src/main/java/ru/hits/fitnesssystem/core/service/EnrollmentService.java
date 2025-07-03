@@ -6,8 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.hits.fitnesssystem.core.entity.Enrollment;
 import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.entity.User;
+import ru.hits.fitnesssystem.core.enumeration.EnrollmentCallType;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
-import ru.hits.fitnesssystem.core.enumeration.TrainingSessionType;
+import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
 import ru.hits.fitnesssystem.core.repository.EnrollmentRepository;
@@ -40,13 +41,18 @@ public class EnrollmentService {
         User user = userRepository.findUserByUsername(currentUsername)
                 .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
 
-        if (user.getSubscription() == null || !Boolean.TRUE.equals(user.getSubscription().getIsActive())) {
-            throw new BadRequestException("У вас нет активной подписки.");
-        }
+        EnrollmentCallType callType = user.getRole().equals(UserRole.TRAINER) ?
+                EnrollmentCallType.TRAINER : EnrollmentCallType.CLIENT;
 
-        Long remainingTrainings = user.getSubscription().getPersonalTrainingCount();
-        if (remainingTrainings == null || remainingTrainings <= 0) {
-            throw new BadRequestException("У вас не осталось доступных тренировок.");
+        if (callType == EnrollmentCallType.CLIENT) {
+            if (user.getSubscription() == null || !Boolean.TRUE.equals(user.getSubscription().getIsActive())) {
+                throw new BadRequestException("У вас нет активной подписки.");
+            }
+
+            Long remainingTrainings = user.getSubscription().getPersonalTrainingCount();
+            if (remainingTrainings == null || remainingTrainings <= 0) {
+                throw new BadRequestException("У вас не осталось доступных тренировок.");
+            }
         }
 
         TrainingSession session = trainingSessionRepository.findById(sessionId)
@@ -62,13 +68,14 @@ public class EnrollmentService {
         }
 
         EnrollmentStatus status;
-
         if (session.getCurrentParticipants() < session.getMaxParticipants()) {
             session.setCurrentParticipants(session.getCurrentParticipants() + 1);
-            status = EnrollmentStatus.CONFIRMED;
+            status = callType == EnrollmentCallType.TRAINER ? EnrollmentStatus.CONFIRMED : EnrollmentStatus.PENDING;
 
-            user.getSubscription().setPersonalTrainingCount(remainingTrainings - 1);
-            userRepository.save(user);
+            if (callType == EnrollmentCallType.CLIENT) {
+                user.getSubscription().setPersonalTrainingCount(user.getSubscription().getPersonalTrainingCount() - 1);
+                userRepository.save(user);
+            }
         } else {
             status = EnrollmentStatus.PENDING;
         }
@@ -79,12 +86,119 @@ public class EnrollmentService {
                 .user(user)
                 .trainingSession(session)
                 .status(status)
+                .enrollmentCallType(callType)
                 .build();
 
         enrollment = enrollmentRepository.save(enrollment);
         return EnrollmentDto.fromEntity(enrollment);
     }
 
+    @Transactional
+    public void approveEnrollment(Long enrollmentId) {
+        String currentUsername = SecurityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new BadRequestException("Пользователь не авторизован.");
+        }
+
+        User currentUser = userRepository.findUserByUsername(currentUsername)
+                .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
+
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new NotFoundException("Запись с ID " + enrollmentId + " не найдена."));
+
+        if (enrollment.getStatus() != EnrollmentStatus.PENDING) {
+            throw new BadRequestException("Можно подтверждать только записи в статусе PENDING.");
+        }
+
+        TrainingSession session = enrollment.getTrainingSession();
+        if (session.getCurrentParticipants() >= session.getMaxParticipants()) {
+            throw new BadRequestException("Достигнуто максимальное количество участников.");
+        }
+
+        if (currentUser.getRole().equals(UserRole.TRAINER)) {
+            // Тренер подтверждает записи клиентов
+            if (!session.getTrainer().getId().equals(currentUser.getId())) {
+                throw new BadRequestException("Вы не можете подтверждать записи для чужих тренировок.");
+            }
+            if (enrollment.getEnrollmentCallType() != EnrollmentCallType.CLIENT) {
+                throw new BadRequestException("Тренер может подтверждать только записи клиентов.");
+            }
+        } else if (currentUser.getRole().equals(UserRole.DEFAULT_USER)) {
+            // Клиент подтверждает записи, созданные тренером
+            if (!enrollment.getUser().getId().equals(currentUser.getId())) {
+                throw new BadRequestException("Вы можете подтверждать только свои записи.");
+            }
+            if (enrollment.getEnrollmentCallType() != EnrollmentCallType.TRAINER) {
+                throw new BadRequestException("Клиент может подтверждать только записи, созданные тренером.");
+            }
+            // Проверка подписки клиента
+            if (currentUser.getSubscription() == null || !currentUser.getSubscription().getIsActive()) {
+                throw new BadRequestException("У вас нет активной подписки.");
+            }
+            Long currentCount = currentUser.getSubscription().getPersonalTrainingCount();
+            if (currentCount <= 0) {
+                throw new BadRequestException("У вас не осталось доступных тренировок.");
+            }
+            currentUser.getSubscription().setPersonalTrainingCount(currentCount - 1);
+            userRepository.save(currentUser);
+        } else {
+            throw new BadRequestException("Недостаточно прав для подтверждения записи.");
+        }
+
+        enrollment.setStatus(EnrollmentStatus.CONFIRMED);
+        session.setCurrentParticipants(session.getCurrentParticipants() + 1);
+
+        enrollmentRepository.save(enrollment);
+        trainingSessionRepository.save(session);
+    }
+
+    @Transactional
+    public EnrollmentDto assignUserToSession(Long sessionId, Long userId) {
+        String currentUsername = SecurityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new BadRequestException("Пользователь не авторизован.");
+        }
+
+        User currentUser = userRepository.findUserByUsername(currentUsername)
+                .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
+
+        if (!currentUser.getRole().equals(UserRole.TRAINER)) {
+            throw new BadRequestException("Только тренер может добавлять пользователей в тренировку.");
+        }
+
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
+
+        TrainingSession session = trainingSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException("Занятие с ID " + sessionId + " не найдено."));
+
+        if (!session.getTrainer().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Вы не можете добавлять пользователей в чужие тренировки.");
+        }
+
+        if (session.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Невозможно добавить пользователя на занятие, которое уже началось или прошло.");
+        }
+
+        if (enrollmentRepository.existsByUserAndTrainingSessionAndStatusIn(targetUser, session,
+                Arrays.asList(EnrollmentStatus.CONFIRMED, EnrollmentStatus.PENDING))) {
+            throw new BadRequestException("Пользователь уже записан на это занятие или находится в листе ожидания.");
+        }
+
+        if (session.getCurrentParticipants() >= session.getMaxParticipants()) {
+            throw new BadRequestException("Достигнуто максимальное количество участников.");
+        }
+
+        Enrollment enrollment = Enrollment.builder()
+                .user(targetUser)
+                .trainingSession(session)
+                .status(EnrollmentStatus.PENDING) // Устанавливаем PENDING для подтверждения клиентом
+                .enrollmentCallType(EnrollmentCallType.TRAINER)
+                .build();
+
+        enrollment = enrollmentRepository.save(enrollment);
+        return EnrollmentDto.fromEntity(enrollment);
+    }
 
     @Transactional
     public void cancelEnrollment(Long enrollmentId) {
@@ -99,8 +213,14 @@ public class EnrollmentService {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new NotFoundException("Запись с ID " + enrollmentId + " не найдена."));
 
-        if (!enrollment.getUser().getId().equals(currentUser.getId())) {
+        if (!enrollment.getUser().getId().equals(currentUser.getId()) &&
+                !currentUser.getRole().equals(UserRole.TRAINER)) {
             throw new BadRequestException("Вы не можете отменить запись другого пользователя.");
+        }
+
+        if (currentUser.getRole().equals(UserRole.TRAINER) &&
+                !enrollment.getTrainingSession().getTrainer().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Вы не можете отменить запись для чужой тренировки.");
         }
 
         if (enrollment.getTrainingSession().getStartTime().isBefore(LocalDateTime.now())) {
@@ -116,16 +236,28 @@ public class EnrollmentService {
             session.setCurrentParticipants(session.getCurrentParticipants() - 1);
             trainingSessionRepository.save(session);
 
-            if (currentUser.getSubscription() != null) {
+            if (enrollment.getEnrollmentCallType() == EnrollmentCallType.CLIENT &&
+                    currentUser.getSubscription() != null) {
                 Long currentCount = currentUser.getSubscription().getPersonalTrainingCount();
                 currentUser.getSubscription().setPersonalTrainingCount(currentCount + 1);
                 userRepository.save(currentUser);
             }
 
-            List<Enrollment> waitlist = enrollmentRepository.findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(session, EnrollmentStatus.PENDING);
+            List<Enrollment> waitlist = enrollmentRepository.findAllByTrainingSessionAndStatusOrderByEnrollmentTimeAsc(
+                    session, EnrollmentStatus.PENDING);
             if (!waitlist.isEmpty()) {
-                Enrollment nextInWaitlist = waitlist.get(0);
+                Enrollment nextInWaitlist = waitlist.getFirst();
                 nextInWaitlist.setStatus(EnrollmentStatus.CONFIRMED);
+                if (nextInWaitlist.getEnrollmentCallType() == EnrollmentCallType.CLIENT) {
+                    User client = nextInWaitlist.getUser();
+                    if (client.getSubscription() != null && client.getSubscription().getIsActive()) {
+                        Long currentCount = client.getSubscription().getPersonalTrainingCount();
+                        if (currentCount > 0) {
+                            client.getSubscription().setPersonalTrainingCount(currentCount - 1);
+                            userRepository.save(client);
+                        }
+                    }
+                }
                 enrollmentRepository.save(nextInWaitlist);
             }
         }

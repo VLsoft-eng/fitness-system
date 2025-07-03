@@ -49,4 +49,18 @@ public class EnrollmentController {
     public boolean isExistsEnrollmentByTrainingSessionId(@PathVariable Long trainingSessionId) {
         return enrollmentService.isTrainingSessionAssigned(trainingSessionId);
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    @PostMapping("/make-enrollment-for-session-for-user/{sessionId}/{userToAssignId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void assignEnrollment(@PathVariable Long sessionId, @PathVariable Long userToAssignId) {
+        enrollmentService.assignUserToSession(sessionId, userToAssignId);
+    }
+
+
+    @PostMapping("/approve-enrollment/{enrollmentId}")
+    @PreAuthorize("isAuthenticated()")
+    public void approveEnrollment(@PathVariable Long enrollmentId) {
+        enrollmentService.approveEnrollment(enrollmentId);
+    }
 }

@@ -1,6 +1,7 @@
 package ru.hits.fitnesssystem.rest.model;
 
 import ru.hits.fitnesssystem.core.entity.Enrollment;
+import ru.hits.fitnesssystem.core.enumeration.EnrollmentCallType;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ public record EnrollmentDto(
         Long trainingSessionId,
         String trainingSessionName,
         LocalDateTime enrollmentTime,
-        EnrollmentStatus status
+        EnrollmentStatus status,
+        EnrollmentCallType enrollmentCallType
 ) {
     public static EnrollmentDto fromEntity(Enrollment enrollment) {
         return new EnrollmentDto(
@@ -22,7 +24,8 @@ public record EnrollmentDto(
                 enrollment.getTrainingSession().getId(),
                 enrollment.getTrainingSession().getName(),
                 enrollment.getEnrollmentTime(),
-                enrollment.getStatus()
+                enrollment.getStatus(),
+                enrollment.getEnrollmentCallType()
         );
     }
 }
