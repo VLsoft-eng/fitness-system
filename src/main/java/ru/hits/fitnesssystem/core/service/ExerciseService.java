@@ -55,7 +55,7 @@ public class ExerciseService {
 
         List<Exercise> exercises = exerciseRepository.findAllByTrainerId(user.getId());
         List<ExerciseDto> exerciseDtos = exercises.stream()
-                .map(exercise -> new ExerciseDto(exercise.getId(), exercise.getTitle(), exercise.getDescription()))
+                .map(this::toExerciseDto)
                 .toList();
         return new ExerciseListDto(exerciseDtos);
     }
@@ -63,6 +63,7 @@ public class ExerciseService {
     public ExerciseDto createExercise(ExerciseCreateDto exerciseCreateDto) {
         String trainerUsername = SecurityUtils.getCurrentUsername();
         User user = userRepository.findUserByUsername(trainerUsername).orElseThrow(() -> new NotFoundException("User not found"));
+
         Exercise exercise = Exercise.builder()
                 .trainer(user)
                 .title(exerciseCreateDto.title())
@@ -70,11 +71,7 @@ public class ExerciseService {
                 .build();
         exerciseRepository.save(exercise);
 
-        return new ExerciseDto(
-                exercise.getId(),
-                exercise.getTitle(),
-                exercise.getDescription()
-        );
+        return toExerciseDto(exercise);
     }
 
     @Transactional
@@ -85,11 +82,13 @@ public class ExerciseService {
                 .orElseThrow(() -> new NotFoundException("Exercise not found"));
         Approach approach = approachRepository.findById(fullExerciseCreateDto.approachId())
                 .orElseThrow(() -> new NotFoundException("Approach not found"));
-        TrainMachine trainMachine = trainMachineRepository.findById(fullExerciseCreateDto.trainMachineId())
-                .orElseThrow(() -> new NotFoundException("Train machine not found"));
 
+        TrainMachine trainMachine = null;
+        if (fullExerciseCreateDto.trainMachineId() != null) {
+            trainMachine = trainMachineRepository.findById(fullExerciseCreateDto.trainMachineId())
+                    .orElseThrow(() -> new NotFoundException("Train machine not found for FullExercise with id: " + fullExerciseCreateDto.trainMachineId()));
+        }
 
-        // Проверка, что exercise и approach принадлежат текущему тренеру
         if (!exercise.getTrainer().getId().equals(user.getId()) || !approach.getTrainer().getId().equals(user.getId())) {
             throw new NotFoundException("Exercise or Approach does not belong to the current trainer");
         }
@@ -105,35 +104,44 @@ public class ExerciseService {
 
         return new FullExerciseDto(
                 fullExercise.getId(),
-                new ExerciseDto(exercise.getId(), exercise.getTitle(), exercise.getDescription()),
+                toExerciseDto(exercise),
                 new ApproachDto(approach.getId(), approach.getApproachesCount(), approach.getRepetitionPerApproachCount()),
-                new TrainMachineDto(trainMachine.getId(), trainMachine.getName(), trainMachine.getDescription(), trainMachine.getBase64Image(), trainMachine.getCount(), trainMachine.getGymRoom().getId())
+                trainMachine != null ? new TrainMachineDto(
+                        trainMachine.getId(),
+                        trainMachine.getName(),
+                        trainMachine.getDescription(),
+                        trainMachine.getBase64Image(),
+                        trainMachine.getCount(),
+                        trainMachine.getGymRoom() != null ? trainMachine.getGymRoom().getId() : null
+                ) : null
         );
     }
 
     public FullExerciseDto getFullExerciseById(Long id) {
         FullExercise fullExercise = fullExerciseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Full exercise not found"));
+
+        TrainMachineDto fullExerciseTrainMachineDto = null;
+        if (fullExercise.getTrainingMachine() != null) {
+            fullExerciseTrainMachineDto = new TrainMachineDto(
+                    fullExercise.getTrainingMachine().getId(),
+                    fullExercise.getTrainingMachine().getName(),
+                    fullExercise.getTrainingMachine().getDescription(),
+                    fullExercise.getTrainingMachine().getBase64Image(),
+                    fullExercise.getTrainingMachine().getCount(),
+                    fullExercise.getTrainingMachine().getGymRoom() != null ? fullExercise.getTrainingMachine().getGymRoom().getId() : null
+            );
+        }
+
         return new FullExerciseDto(
                 fullExercise.getId(),
-                new ExerciseDto(
-                        fullExercise.getExercise().getId(),
-                        fullExercise.getExercise().getTitle(),
-                        fullExercise.getExercise().getDescription()
-                ),
+                toExerciseDto(fullExercise.getExercise()),
                 new ApproachDto(
                         fullExercise.getApproach().getId(),
                         fullExercise.getApproach().getApproachesCount(),
                         fullExercise.getApproach().getRepetitionPerApproachCount()
                 ),
-                new TrainMachineDto(
-                        fullExercise.getTrainingMachine().getId(),
-                        fullExercise.getTrainingMachine().getName(),
-                        fullExercise.getTrainingMachine().getDescription(),
-                        fullExercise.getTrainingMachine().getBase64Image(),
-                        fullExercise.getTrainingMachine().getCount(),
-                        fullExercise.getTrainingMachine().getGymRoom().getId()
-                )
+                fullExerciseTrainMachineDto
         );
     }
 
@@ -183,28 +191,39 @@ public class ExerciseService {
 
         List<FullExercise> fullExercises = fullExerciseRepository.findAllByTrainerId(user.getId());
         List<FullExerciseDto> fullExerciseDtos = fullExercises.stream()
-                .map(fullExercise -> new FullExerciseDto(
-                        fullExercise.getId(),
-                        new ExerciseDto(
-                                fullExercise.getExercise().getId(),
-                                fullExercise.getExercise().getTitle(),
-                                fullExercise.getExercise().getDescription()
-                        ),
-                        new ApproachDto(
-                                fullExercise.getApproach().getId(),
-                                fullExercise.getApproach().getApproachesCount(),
-                                fullExercise.getApproach().getRepetitionPerApproachCount()
-                        ),
-                        new TrainMachineDto(
+                .map(fullExercise -> {
+                    TrainMachineDto fullExerciseTrainMachineDto = null;
+                    if (fullExercise.getTrainingMachine() != null) {
+                        fullExerciseTrainMachineDto = new TrainMachineDto(
                                 fullExercise.getTrainingMachine().getId(),
                                 fullExercise.getTrainingMachine().getName(),
                                 fullExercise.getTrainingMachine().getDescription(),
                                 fullExercise.getTrainingMachine().getBase64Image(),
                                 fullExercise.getTrainingMachine().getCount(),
-                                fullExercise.getTrainingMachine().getGymRoom().getId()
-                        )
-                ))
+                                fullExercise.getTrainingMachine().getGymRoom() != null ? fullExercise.getTrainingMachine().getGymRoom().getId() : null
+                        );
+                    }
+
+                    return new FullExerciseDto(
+                            fullExercise.getId(),
+                            toExerciseDto(fullExercise.getExercise()),
+                            new ApproachDto(
+                                    fullExercise.getApproach().getId(),
+                                    fullExercise.getApproach().getApproachesCount(),
+                                    fullExercise.getApproach().getRepetitionPerApproachCount()
+                            ),
+                            fullExerciseTrainMachineDto
+                    );
+                })
                 .toList();
         return new FullExercisesListDto(fullExerciseDtos);
+    }
+
+    private ExerciseDto toExerciseDto(Exercise exercise) {
+        return new ExerciseDto(
+                exercise.getId(),
+                exercise.getTitle(),
+                exercise.getDescription()
+        );
     }
 }

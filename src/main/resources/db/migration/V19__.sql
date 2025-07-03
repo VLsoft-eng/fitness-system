@@ -10,4 +10,4 @@ ALTER TABLE full_exercises
 ALTER TABLE full_exercises
     ADD CONSTRAINT fk_full_exercises_training_machine
         FOREIGN KEY (training_machine_id)
-            REFERENCES training_machines(id);
+            REFERENCES train_machine(id);
