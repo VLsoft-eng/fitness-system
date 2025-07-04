@@ -22,6 +22,13 @@ public class EnrollmentController {
         return enrollmentService.enrollUserToSession(sessionId);
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping("/trainer/my-enrollments")
+    @ResponseStatus(HttpStatus.OK)
+    public EnrollmentListDto getTrainerEnrollments() {
+        return enrollmentService.getTrainerEnrollments();
+    }
+
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{enrollmentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

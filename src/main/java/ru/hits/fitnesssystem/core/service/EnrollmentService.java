@@ -307,4 +307,25 @@ public class EnrollmentService {
         return enrollmentRepository.existsByUserIdAndTrainingSessionIdAndStatusNot(
                 currentUser.getId(), trainingSessionId, EnrollmentStatus.CANCELLED);
     }
+
+    @Transactional(readOnly = true)
+    public EnrollmentListDto getTrainerEnrollments() {
+        String currentUsername = SecurityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new BadRequestException("Пользователь не авторизован.");
+        }
+
+        User currentUser = userRepository.findUserByUsername(currentUsername)
+                .orElseThrow(() -> new NotFoundException("Авторизованный пользователь не найден."));
+
+        if (!currentUser.getRole().equals(UserRole.TRAINER)) {
+            throw new BadRequestException("Только тренеры могут получить список заявок на свои тренировки.");
+        }
+
+        List<EnrollmentDto> enrollmentDtos = enrollmentRepository.findAllByTrainerAndEnrollmentCallType(currentUser, EnrollmentCallType.CLIENT).stream()
+                .map(EnrollmentDto::fromEntity)
+                .collect(Collectors.toList());
+
+        return new EnrollmentListDto(enrollmentDtos);
+    }
 }

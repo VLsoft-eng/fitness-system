@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.hits.fitnesssystem.core.entity.Enrollment;
 import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.entity.User;
+import ru.hits.fitnesssystem.core.enumeration.EnrollmentCallType;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
 
 import java.time.LocalDateTime;
@@ -31,5 +32,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     @Query("SELECT e.status, COUNT(e) FROM Enrollment e GROUP BY e.status")
     List<Object[]> countEnrollmentsByStatus();
+
+    @Query("SELECT e FROM Enrollment e WHERE e.trainingSession.trainer = :trainer AND e.enrollmentCallType = :callType")
+    List<Enrollment> findAllByTrainerAndEnrollmentCallType(User trainer, EnrollmentCallType callType);
 
 }
