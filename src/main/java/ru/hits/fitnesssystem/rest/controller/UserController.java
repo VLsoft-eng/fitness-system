@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping("/get-all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
     public UserListDto getAllUsers(
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) UserRole role
