@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hits.fitnesssystem.core.entity.FullExercise;
+import ru.hits.fitnesssystem.core.entity.GymRoom;
 import ru.hits.fitnesssystem.core.entity.TrainingSession;
 import ru.hits.fitnesssystem.core.entity.User;
 import ru.hits.fitnesssystem.core.enumeration.EnrollmentStatus;
@@ -15,6 +16,7 @@ import ru.hits.fitnesssystem.core.enumeration.UserRole;
 import ru.hits.fitnesssystem.core.exception.BadRequestException;
 import ru.hits.fitnesssystem.core.exception.NotFoundException;
 import ru.hits.fitnesssystem.core.repository.FullExerciseRepository;
+import ru.hits.fitnesssystem.core.repository.GymRoomRepository;
 import ru.hits.fitnesssystem.core.repository.TrainingSessionRepository;
 import ru.hits.fitnesssystem.core.repository.UserRepository;
 import ru.hits.fitnesssystem.core.security.SecurityUtils;
@@ -31,6 +33,7 @@ public class TrainingSessionService {
     private final TrainingSessionRepository trainingSessionRepository;
     private final FullExerciseRepository fullExerciseRepository;
     private final UserRepository userRepository;
+    private final GymRoomRepository gymRoomRepository;
 
     @Transactional
     public TrainingSessionDto createTrainingSession(CreateTrainingSessionDto dto) {
@@ -45,6 +48,9 @@ public class TrainingSessionService {
         } else if (dto.type() == TrainingSessionType.PERSONAL) {
             throw new BadRequestException("Для персональной тренировки должен быть указан тренер.");
         }
+
+        GymRoom gymRoom = gymRoomRepository.findById(dto.gymRoomId())
+                .orElseThrow(() -> new NotFoundException("Зал с ID " + dto.gymRoomId() + " не найден."));
 
         LocalDateTime endTime = dto.startTime().plusMinutes(dto.durationMinutes());
 
@@ -74,7 +80,7 @@ public class TrainingSessionService {
                 .durationMinutes(dto.durationMinutes())
                 .maxParticipants(maxParticipants)
                 .currentParticipants(0)
-                .location(dto.location())
+                .gymRoom(gymRoom)
                 .build();
 
         session = trainingSessionRepository.save(session);
@@ -85,14 +91,6 @@ public class TrainingSessionService {
     public TrainingSessionDto updateTrainingSession(Long id, UpdateTrainingSessionDto dto) {
         TrainingSession existingSession = trainingSessionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Занятие с ID " + id + " не найдено."));
-
-        if (existingSession.getCurrentParticipants() > 0) {
-            throw new BadRequestException("Невозможно удалить занятие, так как на него есть записавшиеся пользователи. Сначала отмените все записи.");
-        }
-
-        if (trainingSessionRepository.existsByIdAndEnrollmentsStatus(id, EnrollmentStatus.PENDING)) {
-            throw new BadRequestException("Невозможно удалить занятие, так как на него есть пользователи в листе ожидания. Сначала отмените все записи.");
-        }
 
         String currentUsername = SecurityUtils.getCurrentUsername();
         User currentUser = userRepository.findUserByUsername(currentUsername)
@@ -172,7 +170,12 @@ public class TrainingSessionService {
 
         if (dto.name() != null) existingSession.setName(dto.name());
         if (dto.description() != null) existingSession.setDescription(dto.description());
-        if (dto.location() != null) existingSession.setLocation(dto.location());
+
+        if (dto.gymRoomId() != null && (existingSession.getGymRoom() == null || !dto.gymRoomId().equals(existingSession.getGymRoom().getId()))) {
+            GymRoom newGymRoom = gymRoomRepository.findById(dto.gymRoomId())
+                    .orElseThrow(() -> new NotFoundException("Зал с ID " + dto.gymRoomId() + " не найден."));
+            existingSession.setGymRoom(newGymRoom);
+        }
 
         TrainingSession updatedSession = trainingSessionRepository.save(existingSession);
         return TrainingSessionDto.fromEntity(updatedSession);

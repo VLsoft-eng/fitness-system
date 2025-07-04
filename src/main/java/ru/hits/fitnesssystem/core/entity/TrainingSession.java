@@ -50,9 +50,6 @@ public class TrainingSession {
     @Column(name = "current_participants", nullable = false)
     private Integer currentParticipants;
 
-    @Column(name = "location")
-    private String location;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -68,7 +65,7 @@ public class TrainingSession {
     @Builder.Default
     private List<FullExercise> fullExercises = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gym_room_id")
     private GymRoom gymRoom;
 

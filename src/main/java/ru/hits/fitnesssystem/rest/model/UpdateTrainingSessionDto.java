@@ -8,11 +8,8 @@ import java.time.LocalDateTime;
 
 public record UpdateTrainingSessionDto(
         String name,
-
         String description,
-
         TrainingSessionType type,
-
         Long trainerId,
 
         @FutureOrPresent(message = "Время начала занятия должно быть в будущем или настоящем")
@@ -24,6 +21,6 @@ public record UpdateTrainingSessionDto(
         @Min(value = 1, message = "Максимальное количество участников должно быть не менее 1")
         Integer maxParticipants,
 
-        String location
+        Long gymRoomId
 ) {
 }

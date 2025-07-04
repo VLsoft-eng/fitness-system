@@ -21,7 +21,7 @@ public record TrainingSessionDto(
         Integer durationMinutes,
         Optional<Integer> maxParticipants,
         Integer currentParticipants,
-        String location,
+        GymRoomShort gymRoom,
         boolean isFull,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
@@ -54,7 +54,6 @@ public record TrainingSessionDto(
             }
         };
 
-
         List<FullExerciseDto> fullExerciseDtos = session.getFullExercises().stream()
                 .map(fullExercise -> {
                     TrainMachineDto fullExerciseTrainingMachineDto = null;
@@ -83,6 +82,17 @@ public record TrainingSessionDto(
                 })
                 .collect(Collectors.toList());
 
+        GymRoomShort gymRoomDto = (session.getGymRoom() != null)
+                ? new GymRoomShort(
+                session.getGymRoom().getId(),
+                session.getGymRoom().getName(),
+                session.getGymRoom().getDescription(),
+                session.getGymRoom().getLongitude(),
+                session.getGymRoom().getLatitude(),
+                session.getGymRoom().getCapacity()
+        )
+                : null;
+
         return new TrainingSessionDto(
                 session.getId(),
                 session.getName(),
@@ -94,7 +104,7 @@ public record TrainingSessionDto(
                 session.getDurationMinutes(),
                 Optional.ofNullable(session.getMaxParticipants()),
                 session.getCurrentParticipants(),
-                session.getLocation(),
+                gymRoomDto, // ИСПРАВЛЕНО: Передаем GymRoomDto
                 isFull,
                 session.getCreatedAt(),
                 session.getUpdatedAt(),
